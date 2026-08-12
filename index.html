@@ -1,46 +1,112 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
   <title>Beliefs Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    #chartContainer { max-width: 700px; margin: auto; }
+    #controls { margin-bottom: 10px; }
+    canvas { max-width: 100%; height: auto; }
   </style>
-  <!-- Chart.js via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>Beliefs Chart</h1>
-  <p>Radar chart scaffold for your Beliefs Chart data.</p>
+  <h1 id="page-title">Beliefs Chart</h1>
 
-  <div id="chartContainer">
-    <canvas id="beliefsRadar" width="400" height="400"></canvas>
+  <div id="controls">
+    <label for="presetSelect">Preset:</label>
+    <select id="presetSelect" aria-label="Preset selector">
+      <option value="data/beliefs.json">Current Snapshot</option>
+      <option value="data/beliefs_future.json">Future Target</option>
+    </select>
   </div>
 
+  <canvas id="radarChart" width="400" height="400"></canvas>
+
   <script>
-    const ctx = document.getElementById('beliefsRadar').getContext('2d');
-    const data = {
-      labels: ['Openness', 'Truth', 'Compassion', 'Integrity', 'Curiosity', 'Respect'],
-      datasets: [{
-        label: 'Beliefs Chart',
-        data: [65, 90, 75, 80, 70, 85],
-        fill: true,
-        backgroundColor: 'rgba(54, 162, 235, 0.25)',
-        borderColor: 'rgb(54, 162, 235)',
-        pointBackgroundColor: 'rgb(54, 162, 235)'
-      }]
-    };
-    const options = {
-      scales: {
-        r: {
-          beginAtZero: true,
-          max: 100
-        }
+    // Global chart reference
+    let _radarChart = null;
+
+    async function loadChartData(source) {
+      try {
+        const resp = await fetch(source);
+        if (!resp.ok) throw new Error('Failed to load data');
+        return await resp.json();
+      } catch (e) {
+        console.error('Data load error:', e);
+        // Fallback data
+        return {
+          title: "Beliefs Chart",
+          labels: ["Empiricism","Mystery","Tradition","Ethics","Community","Authority","Spiritual Experience","Science"],
+          datasets: [{
+            label: "Current Snapshot",
+            data: [50, 60, 55, 70, 45, 65, 60, 75],
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgba(54, 162, 235, 1)"
+          }]
+        };
       }
-    };
-    new Chart(ctx, { type: 'radar', data, options });
+    }
+
+    async function renderRadar(source) {
+      const data = await loadChartData(source);
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      if (window._radarChart) window._radarChart.destroy();
+
+      window._radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: data.labels,
+          datasets: data.datasets
+        },
+        options: {
+          responsive: true,
+          scales: {
+            r: { beginAtZero: true, min: 0, max: 100 }
+          }
+          // you can add more options here
+        }
+      });
+
+      if (data.title) document.getElementById('page-title').textContent = data.title;
+    }
+
+    // Initialize with default preset
+    const presetSelect = document.getElementById('presetSelect');
+    presetSelect.addEventListener('change', (e) => renderRadar(e.target.value));
+
+    // First render
+    renderRadar(presetSelect.value);
   </script>
 </body>
 </html>
+2) data/beliefs.json (ready to paste)
+Create a folder named data at the root of your repository, then add this file as data/beliefs.json.
+
+{
+  "title": "Beliefs Chart",
+  "labels": ["Empiricism","Mystery","Tradition","Ethics","Community","Authority","Spiritual Experience","Science"],
+  "datasets": [
+    {
+      "label": "Current Snapshot",
+      "data": [70, 40, 60, 75, 50, 65, 55, 80],
+      "backgroundColor": "rgba(54, 162, 235, 0.2)",
+      "borderColor": "rgba(54, 162, 235, 1)"
+    }
+  ]
+}
+3) data/beliefs_future.json (optional second preset)
+If you want the second preset to show a future target, add this file as data/beliefs_future.json.
+
+{
+  "title": "Beliefs Chart — Future Target",
+  "labels": ["Empiricism","Mystery","Tradition","Ethics","Community","Authority","Spiritual Experience","Science"],
+  "datasets": [
+    {
+      "label": "Future Target",
+      "data": [80, 50, 70, 85, 60, 70, 65, 90],
+      "backgroundColor": "rgba(255, 99, 132, 0.2)",
+      "borderColor": "rgba(255, 99, 132, 1)"
+    }
+  ]
+}
