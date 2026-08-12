@@ -1,15 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Beliefs Chart</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #chartContainer { max-width: 700px; margin: auto; }
   </style>
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <h1>Beliefs Chart</h1>
-  <p>Placeholder page. Replace with your radar chart visualization later.</p>
+  <p>Radar chart scaffold for your Beliefs Chart data.</p>
+
+  <div id="chartContainer">
+    <canvas id="beliefsRadar" width="400" height="400"></canvas>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('beliefsRadar').getContext('2d');
+    const data = {
+      labels: ['Openness', 'Truth', 'Compassion', 'Integrity', 'Curiosity', 'Respect'],
+      datasets: [{
+        label: 'Beliefs Chart',
+        data: [65, 90, 75, 80, 70, 85],
+        fill: true,
+        backgroundColor: 'rgba(54, 162, 235, 0.25)',
+        borderColor: 'rgb(54, 162, 235)',
+        pointBackgroundColor: 'rgb(54, 162, 235)'
+      }]
+    };
+    const options = {
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
+    };
+    new Chart(ctx, { type: 'radar', data, options });
+  </script>
 </body>
 </html>
