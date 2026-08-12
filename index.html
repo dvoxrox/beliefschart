@@ -6,12 +6,12 @@
   <title>Beliefs Radar Chart</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    canvas { max-width: 700px; width: 100%; }
+    canvas { max-width: 700px; width: 100%; height: auto; display: block; }
   </style>
 </head>
 <body>
   <h1>Beliefs Radar Chart</h1>
-  <canvas id="beliefsChart" width="400" height="400"></canvas>
+  <canvas id="beliefsChart" width="700" height="700"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
@@ -28,11 +28,15 @@
           loadData('data/beliefs_future.json')
         ]);
 
-        console.log('Current data:', current);
-        console.log('Future data:', future);
-
         const ctx = document.getElementById('beliefsChart').getContext('2d');
         const labels = current.labels;
+
+        // Ensure arrays align with labels
+        if (!Array.isArray(current.data) || !Array.isArray(future.data) ||
+            current.data.length !== labels.length ||
+            future.data.length !== labels.length) {
+          throw new Error('Data arrays are invalid or mismatched lengths.');
+        }
 
         new Chart(ctx, {
           type: 'radar',
@@ -53,10 +57,15 @@
               }
             ]
           },
-          options: { scales: { r: { beginAtZero: true, min: 0, max: 100 } } }
+          options: {
+            scales: {
+              r: { beginAtZero: true, min: 0, max: 100 }
+            }
+          }
         });
       } catch (e) {
         console.error('Chart rendering error:', e);
+        // Optional: display a friendly message on the page
       }
     }
 
