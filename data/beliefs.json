@@ -1,0 +1,12 @@
+{
+  "title": "Beliefs Chart",
+  "labels": ["Empiricism","Mystery","Tradition","Ethics","Community","Authority","Spiritual Experience","Science"],
+  "datasets": [
+    {
+      "label": "Current Snapshot",
+      "data": [70, 40, 60, 75, 50, 65, 55, 80],
+      "backgroundColor": "rgba(54, 162, 235, 0.2)",
+      "borderColor": "rgba(54, 162, 235, 1)"
+    }
+  ]
+}
