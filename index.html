@@ -1,83 +1,66 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Beliefs Chart</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beliefs Radar Chart</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    #controls { margin-bottom: 10px; }
-    canvas { max-width: 100%; height: auto; }
+    canvas { max-width: 700px; width: 100%; }
   </style>
 </head>
 <body>
-  <h1 id="page-title">Beliefs Chart</h1>
+  <h1>Beliefs Radar Chart</h1>
+  <canvas id="beliefsChart" width="400" height="400"></canvas>
 
-  <div id="controls">
-    <label for="presetSelect">Preset:</label>
-    <select id="presetSelect" aria-label="Preset selector">
-      <option value="data/beliefs.json">Current Snapshot</option>
-      <option value="data/beliefs_future.json">Future Target</option>
-    </select>
-  </div>
-
-  <canvas id="radarChart" width="400" height="400"></canvas>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Global chart reference
-    let _radarChart = null;
+    async function loadData(url) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('Failed to load ' + url);
+      return resp.json();
+    }
 
-    async function loadChartData(source) {
+    async function render() {
       try {
-        const resp = await fetch(source);
-        if (!resp.ok) throw new Error('Failed to load data');
-        return await resp.json();
+        const [current, future] = await Promise.all([
+          loadData('data/beliefs.json'),
+          loadData('data/beliefs_future.json')
+        ]);
+
+        console.log('Current data:', current);
+        console.log('Future data:', future);
+
+        const ctx = document.getElementById('beliefsChart').getContext('2d');
+        const labels = current.labels;
+
+        new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Current Snapshot',
+                data: current.data,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)'
+              },
+              {
+                label: 'Future Target',
+                data: future.data,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)'
+              }
+            ]
+          },
+          options: { scales: { r: { beginAtZero: true, min: 0, max: 100 } } }
+        });
       } catch (e) {
-        console.error('Data load error:', e);
-        // Fallback data
-        return {
-          title: "Beliefs Chart",
-          labels: ["Empiricism","Mystery","Tradition","Ethics","Community","Authority","Spiritual Experience","Science"],
-          datasets: [{
-            label: "Current Snapshot",
-            data: [50, 60, 55, 70, 45, 65, 60, 75],
-            backgroundColor: "rgba(54, 162, 235, 0.2)",
-            borderColor: "rgba(54, 162, 235, 1)"
-          }]
-        };
+        console.error('Chart rendering error:', e);
       }
     }
 
-    async function renderRadar(source) {
-      const data = await loadChartData(source);
-      const ctx = document.getElementById('radarChart').getContext('2d');
-      if (window._radarChart) window._radarChart.destroy();
-
-      window._radarChart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-          labels: data.labels,
-          datasets: data.datasets
-        },
-        options: {
-          responsive: true,
-          scales: {
-            r: { beginAtZero: true, min: 0, max: 100 }
-          }
-          // you can add more options here
-        }
-      });
-
-      if (data.title) document.getElementById('page-title').textContent = data.title;
-    }
-
-    // Initialize with default preset
-    const presetSelect = document.getElementById('presetSelect');
-    presetSelect.addEventListener('change', (e) => renderRadar(e.target.value));
-
-    // First render
-    renderRadar(presetSelect.value);
+    render();
   </script>
 </body>
 </html>
-
